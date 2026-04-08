@@ -35,9 +35,10 @@ function deriveWIF() {
 }
 
 function makeAuthHeaders() {
-  const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, '.000Z');
+  const timestamp = new Date().toISOString(); // standard ISO, no modification
   const wif = deriveWIF();
   const signature = Signer.sign(wif, BTC_ADDRESS, timestamp);
+  console.log(`Auth timestamp: ${timestamp}`);
   return {
     'X-BTC-Address': BTC_ADDRESS,
     'X-BTC-Timestamp': timestamp,
@@ -136,6 +137,7 @@ Rules:
 }
 
 async function fileSignal(beat, signal) {
+  // Generate fresh timestamp immediately before sending
   const headers = makeAuthHeaders();
   const payload = {
     beat_slug: beat,
