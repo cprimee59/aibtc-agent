@@ -106,13 +106,14 @@ File a signal about the AIBTC agent economy: bounty stats, agent registrations, 
 Focus on specific numbers and structural trends. Anchor to Stacks block ${liveData.stacksBlock} and Bitcoin block ${liveData.btcBlock}.`,
   };
 
-  const systemPrompt = `You produce JSON only. Output a single JSON object with these fields:
-- headline: string, max 120 chars, declarative with specific numbers
+  const systemPrompt = `You produce JSON only. Output a single JSON object with these exact fields:
+- headline: string, STRICTLY under 120 characters, declarative with specific numbers. Count characters carefully.
 - body: string, max 1000 chars, evidence-dense, anchored to on-chain data
 - sources: array of 2-3 objects with {url, title}
 - tags: array of 3-6 lowercase tag strings
 
 Rules:
+- headline MUST be 119 characters or fewer — this is a hard limit, count every character
 - Every claim must be verifiable from the live data provided
 - Include current block numbers in the body
 - No speculation, only observable facts
@@ -126,7 +127,12 @@ Rules:
   });
 
   const raw = msg.content[0].text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
-  return JSON.parse(raw);
+  const parsed = JSON.parse(raw);
+  // Hard truncate headline to 119 chars as a safety net
+  if (parsed.headline && parsed.headline.length > 119) {
+    parsed.headline = parsed.headline.slice(0, 116) + '...';
+  }
+  return parsed;
 }
 
 async function fileSignal(beat, signal) {
