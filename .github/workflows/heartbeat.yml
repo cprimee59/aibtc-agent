@@ -1,0 +1,31 @@
+name: Heartbeat
+
+on:
+  schedule:
+    # Every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  heartbeat:
+    name: Send AIBTC Check-In
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send heartbeat
+        env:
+          WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
+        run: node scripts/heartbeat.js

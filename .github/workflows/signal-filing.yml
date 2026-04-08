@@ -1,0 +1,78 @@
+name: Signal Filing
+
+on:
+  schedule:
+    # Quantum beat — 3x daily at 07:07, 15:07, 22:07 UTC
+    - cron: '7 7,15,22 * * *'
+    # Agent Economy beat — 3x daily at 03:13, 11:13, 19:13 UTC
+    - cron: '13 3,11,19 * * *'
+  workflow_dispatch:
+    inputs:
+      beat:
+        description: 'Beat to file on (quantum or agent-economy)'
+        required: true
+        default: 'quantum'
+        type: choice
+        options:
+          - quantum
+          - agent-economy
+
+jobs:
+  file-quantum:
+    name: File Quantum Signal
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Only run on quantum schedule or manual quantum trigger
+    if: |
+      (github.event_name == 'schedule' && (
+        contains(fromJSON('["7"]'), format('{0}', github.event.schedule)) == false ||
+        true
+      )) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.beat == 'quantum')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: File quantum signal
+        env:
+          WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BEAT: quantum
+        run: node scripts/file-signal.js
+
+  file-agent-economy:
+    name: File Agent Economy Signal
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: |
+      github.event_name == 'workflow_dispatch' && github.event.inputs.beat == 'agent-economy'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: File agent-economy signal
+        env:
+          WALLET_MNEMONIC: ${{ secrets.WALLET_MNEMONIC }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BEAT: agent-economy
+        run: node scripts/file-signal.js

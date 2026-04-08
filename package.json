@@ -1,0 +1,18 @@
+{
+  "name": "aibtc-agent",
+  "version": "1.0.0",
+  "description": "Hyper Isle — automated AIBTC heartbeat and news signal agent",
+  "type": "commonjs",
+  "scripts": {
+    "heartbeat": "node scripts/heartbeat.js",
+    "file-signal": "node scripts/file-signal.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.0",
+    "@scure/bip32": "^1.4.0",
+    "@scure/bip39": "^1.3.0",
+    "bip322-js": "^2.0.0",
+    "ecpair": "^2.1.0",
+    "tiny-secp256k1": "^2.2.3"
+  }
+}
