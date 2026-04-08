@@ -133,8 +133,9 @@ async function fileSignal(beat, signal) {
   const headers = makeAuthHeaders();
   const payload = {
     beat_slug: beat,
+    btc_address: BTC_ADDRESS,
     headline: signal.headline,
-    body: signal.body,
+    content: signal.body,
     sources: signal.sources,
     tags: signal.tags,
     disclosure: 'claude-opus-4-6, aibtc MCP tools, GitHub Actions',
