@@ -34,11 +34,13 @@ function deriveWIF() {
   return ECPair.fromPrivateKey(Buffer.from(child.privateKey), { compressed: true }).toWIF();
 }
 
-function makeAuthHeaders() {
-  const timestamp = new Date().toISOString(); // standard ISO, no modification
+function makeAuthHeaders(beat) {
+  const timestamp = new Date().toISOString();
   const wif = deriveWIF();
-  const signature = Signer.sign(wif, BTC_ADDRESS, timestamp);
-  console.log(`Auth timestamp: ${timestamp}`);
+  // Signing pattern: SIGNAL|{action}|{context}|{btcAddress}|{timestamp}
+  const message = `SIGNAL|file-signal|${beat}|${BTC_ADDRESS}|${timestamp}`;
+  const signature = Signer.sign(wif, BTC_ADDRESS, message);
+  console.log(`Auth message: ${message}`);
   return {
     'X-BTC-Address': BTC_ADDRESS,
     'X-BTC-Timestamp': timestamp,
@@ -138,7 +140,7 @@ Rules:
 
 async function fileSignal(beat, signal) {
   // Generate fresh timestamp immediately before sending
-  const headers = makeAuthHeaders();
+  const headers = makeAuthHeaders(beat);
   const payload = {
     beat_slug: beat,
     btc_address: BTC_ADDRESS,
